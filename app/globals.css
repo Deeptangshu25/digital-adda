@@ -1,26 +1,182 @@
 @import "tailwindcss";
 
+/* =========================================================
+   ROOT VARIABLES
+========================================================= */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #17120f;
+  --foreground: #f4ead8;
+
+  --gold: #d9a441;
+  --cream: #f4ead8;
+  --muted: #b9a98f;
+  --muted-dark: #756958;
+  --card: #211a16;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+
+/* =========================================================
+   GLOBAL BOX SIZING
+========================================================= */
+
+* {
+  box-sizing: border-box;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+
+/* =========================================================
+   HTML
+========================================================= */
+
+html {
+  scroll-behavior: smooth;
 }
+
+
+/* =========================================================
+   BODY
+========================================================= */
 
 body {
+  margin: 0;
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+
+/* =========================================================
+   LINKS & BUTTONS
+========================================================= */
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+
+/* =========================================================
+   TEXT SELECTION
+========================================================= */
+
+::selection {
+  background: #d9a441;
+  color: #17120f;
+}
+
+
+/* =========================================================
+   PROFILE MODAL
+========================================================= */
+
+/*
+ * Background fade when profile opens.
+ */
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+
+/*
+ * Profile card gently rises and scales into place.
+ */
+
+@keyframes profileIn {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.96);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+
+/*
+ * Profile photo has a slightly softer entrance.
+ */
+
+@keyframes profilePhotoIn {
+  from {
+    opacity: 0;
+    transform: scale(0.88);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+
+/* =========================================================
+   OPTIONAL SCROLLBAR STYLING
+========================================================= */
+
+/*
+ * Keeps the page scrollbar subtle and consistent
+ * with the Digital Adda theme.
+ */
+
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #17120f;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #3a2d24;
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #d9a441;
+}
+
+
+/* =========================================================
+   MOBILE TAP HIGHLIGHT
+========================================================= */
+
+@media (max-width: 768px) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+
+/* =========================================================
+   REDUCED MOTION
+========================================================= */
+
+/*
+ * Respect users who have enabled reduced motion
+ * at operating-system level.
+ */
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
