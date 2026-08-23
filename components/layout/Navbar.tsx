@@ -253,7 +253,7 @@ export default function Navbar() {
               <div className="mx-auto h-32 w-32 overflow-hidden rounded-full border-2 border-[#d9a441]/50 p-1 shadow-[0_0_40px_rgba(217,164,65,0.12)] animate-[profilePhotoIn_450ms_ease-out]">
 
                 <img
-                  src="/profile.jpg"
+                  src="/profile.JPG"
                   alt="Deeptangshu Sen"
                   className="h-full w-full rounded-full object-cover transition duration-500 hover:scale-105"
                 />
