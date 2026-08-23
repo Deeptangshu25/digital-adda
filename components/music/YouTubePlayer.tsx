@@ -44,10 +44,6 @@ interface YouTubePlayerProps {
 declare global {
   interface Window {
     YT: any;
-
-    onYouTubeIframeAPIReady:
-      | (() => void)
-      | undefined;
   }
 }
 
