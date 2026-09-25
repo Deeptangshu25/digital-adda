@@ -4,16 +4,16 @@ import { useState } from "react";
 
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
+
 import Hero from "@/components/home/Hero";
 import PlaylistSection from "@/components/home/PlaylistSection";
+import DurgaPujaSection from "@/components/home/DurgaPujaSection";
 import AboutSection from "@/components/home/AboutSection";
 import SundaySuspenseSection from "@/components/home/SundaySuspenseSection";
+
 import MusicPlayer from "@/components/music/MusicPlayer";
 
 import { playlists } from "@/data/playlists";
-
-const SUNDAY_SUSPENSE_PLAYLIST =
-  "PLhzkzKZauxcylFfRSA9F7LFPuRZpLRwim";
 
 interface CurrentVideo {
   videoId?: string;
@@ -43,7 +43,7 @@ export default function Home() {
   // =========================================================
   // CURRENT VIDEO ID
   //
-  // This is used to keep Sunday Suspense synchronized
+  // Keeps Sunday Suspense synchronized
   // with the actual YouTube player.
   // =========================================================
 
@@ -78,13 +78,46 @@ export default function Home() {
 
     setCurrentVideoId(undefined);
 
-    /*
-     * This is triggered by the user's
-     * Listen button.
-     */
-
+    // User explicitly clicked Listen.
     setShouldAutoplay(true);
 
+    setTimeout(() => {
+      document
+        .getElementById("radio")
+        ?.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+        });
+    }, 100);
+  };
+
+  // =========================================================
+  // DURGA PUJA PLAYLIST
+  //
+  // Mahalaya:
+  // PLdmrlJOn6maQ
+  //
+  // Pujo Classics:
+  // PLfaE80CWR08s
+  // =========================================================
+
+  const handleDurgaPujaSelect = (
+    playlistId: string
+  ) => {
+    setSelectedPlaylistId(
+      playlistId
+    );
+
+    // Always start from first song.
+    setSelectedSongIndex(0);
+
+    // Clear old video while new playlist loads.
+    setCurrentVideoId(undefined);
+
+    // User explicitly selected a Pujo playlist.
+    setShouldAutoplay(true);
+
+    // Scroll to Music Player.
     setTimeout(() => {
       document
         .getElementById("radio")
@@ -111,18 +144,11 @@ export default function Home() {
       episodeIndex
     );
 
-    /*
-     * Clear the old video ID while the
-     * newly selected episode loads.
-     */
-
+    // Clear old video while the
+    // newly selected episode loads.
     setCurrentVideoId(undefined);
 
-    /*
-     * User explicitly selected an episode.
-     * Start playing automatically.
-     */
-
+    // User explicitly selected an episode.
     setShouldAutoplay(true);
 
     setTimeout(() => {
@@ -138,8 +164,8 @@ export default function Home() {
   // =========================================================
   // PLAYER VIDEO CHANGE
   //
-  // This is called whenever YouTube changes the
-  // currently playing video.
+  // Called whenever YouTube changes
+  // the currently playing video.
   // =========================================================
 
   const handleCurrentVideoChange = (
@@ -153,6 +179,10 @@ export default function Home() {
       video.videoId
     );
   };
+
+  // =========================================================
+  // RENDER
+  // =========================================================
 
   return (
     <main className="min-h-screen bg-[#17120f] text-[#f4ead8]">
@@ -171,10 +201,9 @@ export default function Home() {
 
       {/* =====================================================
           MUSIC PLAYER
-
-          IMPORTANT:
+          
           key forces a fresh MusicPlayer instance when
-          the user selects a different episode.
+          the user selects a different playlist or episode.
       ===================================================== */}
 
       <MusicPlayer
@@ -204,10 +233,28 @@ export default function Home() {
       />
 
       {/* =====================================================
-          SUNDAY SUSPENSE
+          DURGA PUJA
+          
+          Contains:
+          - Countdown
+          - Mahalaya
+          - Pujo Classics
+          
+          Clicking either playlist changes the
+          main MusicPlayer.
+      ===================================================== */}
 
-          currentVideoId keeps the featured episode and
-          selected card synchronized with MusicPlayer.
+      <DurgaPujaSection
+        onSelectPlaylist={
+          handleDurgaPujaSelect
+        }
+      />
+
+      {/* =====================================================
+          SUNDAY SUSPENSE
+          
+          currentVideoId keeps the featured episode
+          and selected card synchronized with MusicPlayer.
       ===================================================== */}
 
       <SundaySuspenseSection

@@ -30,10 +30,6 @@ interface MusicPlayerProps {
   startIndex?: number;
   autoplay?: boolean;
 
-  /*
-   * Sends the actual currently playing YouTube
-   * video back to the parent.
-   */
   onCurrentVideoChange?: (
     video: CurrentVideo
   ) => void;
@@ -45,7 +41,6 @@ export default function MusicPlayer({
   autoplay = false,
   onCurrentVideoChange,
 }: MusicPlayerProps) {
-
   // =========================================================
   // PLAYLIST INFORMATION
   // =========================================================
@@ -60,11 +55,31 @@ export default function MusicPlayer({
     playlistId ===
     "PLhzkzKZauxcylFfRSA9F7LFPuRZpLRwim";
 
+  // =========================================================
+  // DURGA PUJA PLAYLISTS
+  // =========================================================
+
+  const isMahalaya =
+    playlistId ===
+    "PLdmrlJOn6maQ";
+
+  const isPujoClassics =
+    playlistId ===
+    "PLfaE80CWR08s";
+
+  const isDurgaPuja =
+    isMahalaya ||
+    isPujoClassics;
+
   const playlistName =
     normalPlaylist?.name ??
     (isSundaySuspense
       ? "Sunday Suspense"
-      : "Digital Adda");
+      : isMahalaya
+        ? "Mahalaya"
+        : isPujoClassics
+          ? "Pujo Classics"
+          : "Digital Adda");
 
   // =========================================================
   // PLAYER REF
@@ -103,9 +118,48 @@ export default function MusicPlayer({
   });
 
   // =========================================================
-  // CALLBACK REF
+  // DURGA ANIMATION STATE
   //
-  // Prevents stale callback references.
+  // The image slowly moves between two zoom levels while
+  // a Durga Puja playlist is actually playing.
+  // =========================================================
+
+  const [
+    durgaMotion,
+    setDurgaMotion,
+  ] = useState(false);
+
+  useEffect(() => {
+    if (
+      !isDurgaPuja ||
+      !isPlaying
+    ) {
+      setDurgaMotion(false);
+      return;
+    }
+
+    // Start animation immediately.
+    setDurgaMotion(true);
+
+    const animationTimer =
+      setInterval(() => {
+        setDurgaMotion(
+          (previous) => !previous
+        );
+      }, 6500);
+
+    return () => {
+      clearInterval(
+        animationTimer
+      );
+    };
+  }, [
+    isDurgaPuja,
+    isPlaying,
+  ]);
+
+  // =========================================================
+  // CALLBACK REF
   // =========================================================
 
   const currentVideoCallbackRef =
@@ -134,12 +188,10 @@ export default function MusicPlayer({
         );
 
         setPlaylistSongs([]);
-
         setCurrentTime(0);
-
         setDuration(0);
-
         setIsPlaying(false);
+        setDurgaMotion(false);
 
         setCurrentVideo({
           title: "Loading...",
@@ -196,10 +248,9 @@ export default function MusicPlayer({
           return;
         }
 
-        /*
-         * Show the selected starting episode
-         * immediately while YouTube loads.
-         */
+        // =====================================================
+        // SELECT STARTING SONG
+        // =====================================================
 
         const safeIndex =
           Math.min(
@@ -214,7 +265,7 @@ export default function MusicPlayer({
           songs[safeIndex];
 
         if (selectedSong) {
-          const video = {
+          const video: CurrentVideo = {
             videoId:
               selectedSong.videoId,
 
@@ -227,18 +278,10 @@ export default function MusicPlayer({
 
           setCurrentVideo(video);
 
-          /*
-           * Inform parent immediately.
-           *
-           * This keeps Sunday Suspense synchronized
-           * even before the YouTube event arrives.
-           */
-
           currentVideoCallbackRef.current?.(
             video
           );
         }
-
       } catch (error) {
         if (cancelled) {
           return;
@@ -265,7 +308,6 @@ export default function MusicPlayer({
     return () => {
       cancelled = true;
     };
-
   }, [
     playlistId,
     playlistName,
@@ -280,6 +322,10 @@ export default function MusicPlayer({
     playing: boolean
   ) => {
     setIsPlaying(playing);
+
+    if (!playing) {
+      setDurgaMotion(false);
+    }
   };
 
   // =========================================================
@@ -291,24 +337,16 @@ export default function MusicPlayer({
     totalDuration: number
   ) => {
     setCurrentTime(time);
-
-    setDuration(
-      totalDuration
-    );
+    setDuration(totalDuration);
   };
 
   // =========================================================
   // SONG CHANGE
-  //
-  // This is the important synchronization point.
-  // Whenever YouTube changes the actual video,
-  // Sunday Suspense is informed.
   // =========================================================
 
   const handleSongChange = (
     video: CurrentVideo
   ) => {
-
     const playlistSong =
       playlistSongs.find(
         (song) =>
@@ -317,8 +355,7 @@ export default function MusicPlayer({
       );
 
     if (playlistSong) {
-
-      const updatedVideo = {
+      const updatedVideo: CurrentVideo = {
         videoId:
           playlistSong.videoId,
 
@@ -352,7 +389,6 @@ export default function MusicPlayer({
   // =========================================================
 
   const handlePlayPause = () => {
-
     if (!playerRef.current) {
       return;
     }
@@ -369,11 +405,9 @@ export default function MusicPlayer({
   // =========================================================
 
   const handleNext = () => {
-
     playerRef.current?.next();
 
     setCurrentTime(0);
-
     setDuration(0);
   };
 
@@ -382,11 +416,9 @@ export default function MusicPlayer({
   // =========================================================
 
   const handlePrevious = () => {
-
     playerRef.current?.previous();
 
     setCurrentTime(0);
-
     setDuration(0);
   };
 
@@ -397,7 +429,6 @@ export default function MusicPlayer({
   const handleSeek = (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
-
     const newTime =
       Number(event.target.value);
 
@@ -415,7 +446,6 @@ export default function MusicPlayer({
   const handleVolume = (
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
-
     const newVolume =
       Number(event.target.value);
 
@@ -433,7 +463,6 @@ export default function MusicPlayer({
   const formatTime = (
     seconds: number
   ) => {
-
     if (
       !Number.isFinite(seconds)
     ) {
@@ -454,10 +483,7 @@ export default function MusicPlayer({
       .toString()
       .padStart(2, "0")}:${remainingSeconds
       .toString()
-      .padStart(
-        2,
-        "0"
-      )}`;
+      .padStart(2, "0")}`;
   };
 
   // =========================================================
@@ -492,9 +518,12 @@ export default function MusicPlayer({
   return (
     <section
       id="radio"
-      className="border-y border-[#f4ead8]/10 bg-[#211a16]"
+      className={
+        isDurgaPuja
+          ? "border-y border-[#f4ead8]/10 bg-[#120c0a]"
+          : "border-y border-[#f4ead8]/10 bg-[#211a16]"
+      }
     >
-
       <div className="mx-auto max-w-7xl px-6 py-16">
 
         {/* =====================================================
@@ -506,9 +535,11 @@ export default function MusicPlayer({
           <div>
 
             <p className="text-xs uppercase tracking-[0.4em] text-[#d9a441]">
-              {isSundaySuspense
-                ? "Sunday Suspense"
-                : "Live Radio"}
+              {isDurgaPuja
+                ? "Shubho Sharodiya"
+                : isSundaySuspense
+                  ? "Sunday Suspense"
+                  : "Live Radio"}
             </p>
 
             <h3 className="mt-3 text-4xl font-bold">
@@ -524,78 +555,279 @@ export default function MusicPlayer({
         </div>
 
         {/* =====================================================
-            PLAYER
+            PLAYER GRID
         ===================================================== */}
 
         <div className="grid gap-8 md:grid-cols-[1fr_1.5fr]">
 
           {/* ===================================================
-              VINYL
+              LEFT VISUAL PLAYER
           =================================================== */}
 
-          <div className="relative flex min-h-[360px] items-center justify-center overflow-hidden rounded-3xl border border-[#f4ead8]/10 bg-[#17120f]">
+          <div
+            className={`
+              relative
+              flex
+              min-h-[360px]
+              items-center
+              justify-center
+              overflow-hidden
+              rounded-3xl
+              border
+              border-[#f4ead8]/10
+              ${
+                isDurgaPuja
+                  ? "bg-[#120c0a]"
+                  : "bg-[#17120f]"
+              }
+            `}
+          >
 
-            <div
-              className={`absolute h-72 w-72 rounded-full bg-[#d9a441]/10 blur-3xl transition-opacity duration-700 ${
-                isPlaying
-                  ? "opacity-100"
-                  : "opacity-50"
-              }`}
-            />
+            {/* =================================================
+                DURGA PUJA VISUAL
+            ================================================= */}
 
-            <div
-              className={`relative z-10 h-72 w-72 rounded-full border border-[#d9a441]/20 bg-[#0d0b0a] shadow-[0_0_80px_rgba(217,164,65,0.12)] ${
-                isPlaying
-                  ? "animate-spin"
-                  : ""
-              }`}
-              style={{
-                animationDuration:
-                  "9s",
-              }}
-            >
+            {isDurgaPuja ? (
+              <>
+                {/* -------------------------------------------------
+                    DURGA IDOL
 
-              <div className="absolute inset-5 rounded-full border border-[#f4ead8]/5" />
+                    The idol is now the entire visual.
 
-              <div className="absolute inset-10 rounded-full border border-[#f4ead8]/5" />
+                    It gently zooms in/out only while the
+                    Mahalaya or Pujo Classics playlist is playing.
+                ------------------------------------------------- */}
 
-              <div className="absolute inset-[60px] rounded-full border border-[#f4ead8]/5" />
+                <div
+                  className="
+                    absolute
+                    inset-0
+                    bg-cover
+                    bg-center
+                    bg-no-repeat
+                    opacity-90
+                    transition-transform
+                    duration-[6500ms]
+                    ease-in-out
+                  "
+                  style={{
+                    backgroundImage:
+                      "url('/durga-idol-bg.jpg')",
 
-              <div className="absolute inset-[75px] rounded-full border border-[#f4ead8]/5" />
+                    transform:
+                      isPlaying
+                        ? durgaMotion
+                          ? "scale(1.07)"
+                          : "scale(1.01)"
+                        : "scale(1)",
+                  }}
+                />
 
-              <div className="absolute left-1/2 top-1/2 flex h-24 w-24 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-[#d9a441]/30 bg-[#211a16]">
+                {/* -------------------------------------------------
+                    SOFT DARK OVERLAY
 
-                <div className="text-center">
+                    Kept light enough so Durga's face stays visible.
+                ------------------------------------------------- */}
 
-                  <div className="text-[8px] uppercase tracking-[0.35em] text-[#d9a441]">
-                    {isSundaySuspense
-                      ? "Sunday"
-                      : "Digital"}
+                <div
+                  className="
+                    absolute
+                    inset-0
+                    bg-gradient-to-b
+                    from-black/10
+                    via-black/0
+                    to-black/65
+                  "
+                />
+
+                {/* -------------------------------------------------
+                    GOLDEN LIGHT
+                ------------------------------------------------- */}
+
+                <div
+                  className="
+                    absolute
+                    inset-0
+                    bg-[radial-gradient(circle_at_50%_35%,rgba(217,164,65,0.18),transparent_55%)]
+                  "
+                />
+
+                {/* -------------------------------------------------
+                    BOTTOM VIGNETTE
+                ------------------------------------------------- */}
+
+                <div
+                  className="
+                    absolute
+                    inset-x-0
+                    bottom-0
+                    h-2/5
+                    bg-gradient-to-t
+                    from-black/75
+                    via-black/20
+                    to-transparent
+                  "
+                />
+
+                {/* -------------------------------------------------
+                    PUJO LABEL
+                ------------------------------------------------- */}
+
+                <div
+                  className="
+                    absolute
+                    left-1/2
+                    top-6
+                    z-20
+                    -translate-x-1/2
+                    whitespace-nowrap
+                    rounded-full
+                    border
+                    border-[#d9a441]/40
+                    bg-black/35
+                    px-5
+                    py-2
+                    backdrop-blur-sm
+                  "
+                >
+                  <span
+                    className="
+                      text-[9px]
+                      uppercase
+                      tracking-[0.35em]
+                      text-[#d9a441]
+                    "
+                  >
+                    🪔{" "}
+                    {isMahalaya
+                      ? "Mahalaya"
+                      : "Pujo Classics"}{" "}
+                    🪔
+                  </span>
+                </div>
+
+                {/* -------------------------------------------------
+                    BOTTOM PUJO TEXT
+                ------------------------------------------------- */}
+
+                <div
+                  className="
+                    absolute
+                    bottom-7
+                    left-0
+                    right-0
+                    z-20
+                    text-center
+                  "
+                >
+                  <p
+                    className="
+                      text-[9px]
+                      uppercase
+                      tracking-[0.45em]
+                      text-[#f4ead8]/70
+                    "
+                  >
+                    {isPlaying
+                      ? "Now Playing"
+                      : playlistName}
+                  </p>
+                </div>
+              </>
+            ) : (
+              <>
+                {/* =================================================
+                    NORMAL PLAYLIST VISUAL
+                ================================================= */}
+
+                <div
+                  className={`
+                    absolute
+                    h-72
+                    w-72
+                    rounded-full
+                    bg-[#d9a441]/10
+                    blur-3xl
+                    transition-opacity
+                    duration-700
+                    ${
+                      isPlaying
+                        ? "opacity-100"
+                        : "opacity-50"
+                    }
+                  `}
+                />
+
+                {/* =================================================
+                    NORMAL VINYL
+                ================================================= */}
+
+                <div
+                  className={`
+                    relative
+                    z-10
+                    h-72
+                    w-72
+                    rounded-full
+                    border
+                    border-[#d9a441]/20
+                    bg-[#0d0b0a]
+                    shadow-[0_0_80px_rgba(217,164,65,0.12)]
+                    ${
+                      isPlaying
+                        ? "animate-spin"
+                        : ""
+                    }
+                  `}
+                  style={{
+                    animationDuration:
+                      "9s",
+                  }}
+                >
+
+                  <div className="absolute inset-5 rounded-full border border-[#f4ead8]/5" />
+
+                  <div className="absolute inset-10 rounded-full border border-[#f4ead8]/5" />
+
+                  <div className="absolute inset-[60px] rounded-full border border-[#f4ead8]/5" />
+
+                  <div className="absolute inset-[75px] rounded-full border border-[#f4ead8]/5" />
+
+                  <div className="absolute left-1/2 top-1/2 flex h-24 w-24 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border border-[#d9a441]/30 bg-[#211a16]">
+
+                    <div className="text-center">
+
+                      <div className="text-[8px] uppercase tracking-[0.35em] text-[#d9a441]">
+                        {isSundaySuspense
+                          ? "Sunday"
+                          : "Digital"}
+                      </div>
+
+                      <div className="mt-1 text-[8px] uppercase tracking-[0.35em] text-[#b9a98f]">
+                        {isSundaySuspense
+                          ? "Suspense"
+                          : "Adda"}
+                      </div>
+
+                    </div>
+
                   </div>
 
-                  <div className="mt-1 text-[8px] uppercase tracking-[0.35em] text-[#b9a98f]">
-                    {isSundaySuspense
-                      ? "Suspense"
-                      : "Adda"}
-                  </div>
+                  <div className="absolute left-1/2 top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#d9a441]" />
 
                 </div>
 
-              </div>
+                <div className="absolute bottom-7 left-0 right-0 z-20 text-center">
 
-              <div className="absolute left-1/2 top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#d9a441]" />
+                  <p className="text-[9px] uppercase tracking-[0.45em] text-[#756958]">
+                    {isPlaying
+                      ? "Now Playing"
+                      : playlistName}
+                  </p>
 
-            </div>
-
-            <div className="absolute bottom-7 left-0 right-0 z-30 text-center">
-
-              <p className="text-[9px] uppercase tracking-[0.45em] text-[#756958]">
-                {isPlaying
-                  ? "Now Playing"
-                  : playlistName}
-              </p>
-
-            </div>
+                </div>
+              </>
+            )}
 
             {/* =================================================
                 YOUTUBE PLAYER
@@ -647,7 +879,6 @@ export default function MusicPlayer({
             </p>
 
             <p className="mt-2 text-xs uppercase tracking-[0.2em] text-[#756958]">
-
               {currentPlaylistSong
                 ? `Track ${
                     currentPlaylistSong.position +
@@ -656,7 +887,6 @@ export default function MusicPlayer({
                     playlistSongs.length
                   }`
                 : playlistName}
-
             </p>
 
             {/* =================================================
@@ -681,7 +911,14 @@ export default function MusicPlayer({
                     rgba(244,234,216,0.12) ${progress}%
                   )`,
                 }}
-                className="h-1 w-full cursor-pointer appearance-none rounded-full focus:outline-none"
+                className="
+                  h-1
+                  w-full
+                  cursor-pointer
+                  appearance-none
+                  rounded-full
+                  focus:outline-none
+                "
               />
 
               <div className="mt-3 flex justify-between text-xs text-[#756958]">
@@ -714,7 +951,20 @@ export default function MusicPlayer({
                   handlePrevious
                 }
                 aria-label="Previous song"
-                className="flex h-12 w-12 items-center justify-center rounded-full border border-[#f4ead8]/15 text-xl transition hover:border-[#d9a441] hover:text-[#d9a441]"
+                className="
+                  flex
+                  h-12
+                  w-12
+                  items-center
+                  justify-center
+                  rounded-full
+                  border
+                  border-[#f4ead8]/15
+                  text-xl
+                  transition
+                  hover:border-[#d9a441]
+                  hover:text-[#d9a441]
+                "
               >
                 ‹
               </button>
@@ -729,7 +979,21 @@ export default function MusicPlayer({
                     ? "Pause"
                     : "Play"
                 }
-                className="flex h-16 w-16 items-center justify-center rounded-full bg-[#d9a441] text-xl font-bold text-[#17120f] shadow-lg transition hover:scale-105"
+                className="
+                  flex
+                  h-16
+                  w-16
+                  items-center
+                  justify-center
+                  rounded-full
+                  bg-[#d9a441]
+                  text-xl
+                  font-bold
+                  text-[#17120f]
+                  shadow-lg
+                  transition
+                  hover:scale-105
+                "
               >
                 {isPlaying
                   ? "||"
@@ -742,7 +1006,20 @@ export default function MusicPlayer({
                   handleNext
                 }
                 aria-label="Next song"
-                className="flex h-12 w-12 items-center justify-center rounded-full border border-[#f4ead8]/15 text-xl transition hover:border-[#d9a441] hover:text-[#d9a441]"
+                className="
+                  flex
+                  h-12
+                  w-12
+                  items-center
+                  justify-center
+                  rounded-full
+                  border
+                  border-[#f4ead8]/15
+                  text-xl
+                  transition
+                  hover:border-[#d9a441]
+                  hover:text-[#d9a441]
+                "
               >
                 ›
               </button>
@@ -767,7 +1044,12 @@ export default function MusicPlayer({
                 onChange={
                   handleVolume
                 }
-                className="h-1 w-full cursor-pointer accent-[#d9a441]"
+                className="
+                  h-1
+                  w-full
+                  cursor-pointer
+                  accent-[#d9a441]
+                "
               />
 
               <span className="w-8 text-right text-xs text-[#756958]">
@@ -781,7 +1063,6 @@ export default function MusicPlayer({
         </div>
 
       </div>
-
     </section>
   );
 }
