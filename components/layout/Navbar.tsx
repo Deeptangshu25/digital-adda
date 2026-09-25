@@ -204,6 +204,8 @@ export default function Navbar() {
     left-[18px]
     top-[19px]
     z-[70]
+    hidden
+    lg:block
     rounded-full
     border
     border-[#d9a441]/35
@@ -313,11 +315,13 @@ export default function Navbar() {
           className="
             mx-auto
             flex
-            h-[88px]
+            h-[72px]
             max-w-7xl
             items-center
             justify-between
-            px-6
+            px-4
+            sm:h-[88px]
+            sm:px-6
             lg:pl-[90px]
           "
         >
@@ -363,7 +367,8 @@ export default function Navbar() {
   <span
     className="
       relative
-      text-[22px]
+      text-[16px]
+      sm:text-[22px]
       font-bold
       tracking-[0.18em]
       text-[#f4ead8]
@@ -382,8 +387,10 @@ export default function Navbar() {
   <span
     className="
       relative
-      mt-1
-      text-[9px]
+      mt-0.5
+      text-[7px]
+      sm:mt-1
+      sm:text-[9px]
       uppercase
       tracking-[0.42em]
       text-[#b9a98f]
@@ -455,9 +462,11 @@ export default function Navbar() {
               className="
                 group
                 flex
-                h-14
-                w-14
+                h-11
+                w-11
                 items-center
+                sm:h-14
+                sm:w-14
                 justify-center
                 rounded-full
                 border
@@ -471,8 +480,8 @@ export default function Navbar() {
               "
             >
               <svg
-                width="21"
-                height="21"
+                width="18"
+                height="18"
                 viewBox="0 0 24 24"
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg"
@@ -527,9 +536,11 @@ export default function Navbar() {
               className="
                 group
                 flex
-                h-14
-                w-14
+                h-11
+                w-11
                 items-center
+                sm:h-14
+                sm:w-14
                 justify-center
                 rounded-full
                 border
@@ -543,8 +554,8 @@ export default function Navbar() {
               "
             >
               <svg
-                width="21"
-                height="21"
+                width="18"
+                height="18"
                 viewBox="0 0 24 24"
                 fill="none"
                 xmlns="http://www.w3.org/2000/svg"
@@ -588,14 +599,33 @@ export default function Navbar() {
           <nav
             className="
               flex
-              gap-6
+              items-center
+              gap-5
               overflow-x-auto
-              px-6
-              py-4
+              px-4
+              py-3
+              sm:gap-6
+              sm:px-6
+              sm:py-4
               [scrollbar-width:none]
               [&::-webkit-scrollbar]:hidden
             "
           >
+            {/* MOBILE IST CLOCK */}
+            <div className="flex shrink-0 items-center rounded-full border border-[#d9a441]/30 bg-[#5b3828]/60 px-3 py-1.5 backdrop-blur-md lg:hidden">
+              <span className="text-[12px] font-semibold tracking-wide text-[#f4ead8]">
+                {clockParts.hour}
+                <span className={showColon ? "opacity-100" : "opacity-0"}>:</span>
+                {clockParts.minute}
+              </span>
+              <span className="ml-1.5 text-[10px] font-semibold lowercase text-[#f4ead8]">
+                {clockParts.period}
+              </span>
+              <span className="ml-1.5 text-[9px] font-semibold tracking-wide text-[#f4ead8]/65">
+                IST
+              </span>
+            </div>
+
             {navItems
               .filter(
                 (item) =>
