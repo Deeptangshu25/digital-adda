@@ -611,8 +611,7 @@ export default function MusicPlayer({
                     ease-in-out
                   "
                   style={{
-                    backgroundImage:
-                      "url('/durga-idol-bg.jpg')",
+                    backgroundImage: "url('/durga-idol-bg.JPG')",
 
                     transform:
                       isPlaying
